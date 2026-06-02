@@ -1,25 +1,8 @@
 import geopandas as gpd
 import zipfile
 import os
-import boto3
-from dotenv import load_dotenv
 from datetime import datetime, timezone
-
-load_dotenv()
-
-# ── S3 ──────────────────────────────────────────
-s3 = boto3.client(
-    's3',
-    endpoint_url=os.getenv('HETZNER_ENDPOINT'),
-    aws_access_key_id=os.getenv('HETZNER_ACCESS_KEY'),
-    aws_secret_access_key=os.getenv('HETZNER_SECRET_KEY'),
-    region_name='eu-central-1'
-)
-BUCKET = os.getenv('HETZNER_BUCKET')
-
-def upload_to_lake(local_path, s3_key):
-    s3.upload_file(local_path, BUCKET, s3_key)
-    print(f"  → Lake: {s3_key}")
+from utils.s3 import upload
 
 # ── PATHS ────────────────────────────────────────
 zip_path = "data/raw/informacion-arpsi.zip"
@@ -27,10 +10,7 @@ timestamp = datetime.now(timezone.utc).strftime("%Y%m%d")
 
 # ── BRONZE: subir raw ────────────────────────────
 print("Subiendo Bronze...")
-upload_to_lake(
-    zip_path,
-    f"bronze/p2-riesgo-hidrico/arpsis_raw_{timestamp}.zip"
-)
+upload(zip_path, f"bronze/p2-riesgo-hidrico/arpsis_raw_{timestamp}.zip")
 
 # ── PROCESAR ─────────────────────────────────────
 print("Descomprimiendo...")
@@ -58,10 +38,7 @@ print(f"Guardado local: {geojson_path}")
 
 # ── SILVER: subir procesado ───────────────────────
 print("Subiendo Silver...")
-upload_to_lake(
-    geojson_path,
-    f"silver/p2-riesgo-hidrico/arpsis_malaga_{timestamp}.geojson"
-)
+upload(geojson_path, f"silver/p2-riesgo-hidrico/arpsis_malaga_{timestamp}.geojson")
 
 print("\nPipeline completado.")
 print(f"  Bronze: arpsis_raw_{timestamp}.zip")
