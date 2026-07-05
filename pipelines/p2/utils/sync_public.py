@@ -108,7 +108,7 @@ def sync_gold_to_public(s3, private_bucket, public_bucket, prefix):
                 CopySource=copy_source,
                 ACL="public-read",  # Hacer el objeto público
             )
-            logger.info(f"Copiado: {key} → {public_bucket}/{public_key}")
+            logger.info(f"Copiado: {key} -> {public_bucket}/{public_key}")
             copied_count += 1
         except ClientError as e:
             logger.error(f"Error al copiar {key}: {e}")
